@@ -1,14 +1,17 @@
-MasterFilePoller
+ClusterFilePoller
 ================
 
-A java file poller utility to work in a clustered environment with automated failover.
+A simple java file poller utility that works in a clustered environment with automated failover.
+* Regex match against file names
+* Poll many folders (threads)
+* Pause/resume support (cluster-wide)
 
 
 Dependencies
 ============
-* Apache [ZooKeeper](http://zookeeper.apache.org)
-* Apache [Curator](http://curator.incubator.apache.org)
-
+* Apache [ZooKeeper](http://zookeeper.apache.org) (Cluster configuration)
+* Apache [Curator](http://curator.incubator.apache.org) (ZooKeeper client)
+* [SLF4J](http://www.slf4j.org) (Logging)
 
 Usage
 =====
