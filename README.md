@@ -14,7 +14,7 @@ Usage
 =====
 
     <dependency>
-      <groupId>com.nixxed</groupId>
+      <groupId>org.nixxed</groupId>
       <artifactId>mfp</artifactId>
       <version>TODO</version>
     </dependency>

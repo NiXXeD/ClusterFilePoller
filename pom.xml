@@ -4,36 +4,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.nixxed</groupId>
-    <artifactId>mfp</artifactId>
-    <version>0.0.1</version>
-
-    <properties>
-        <logback.version>1.0.13</logback.version>
-    </properties>
+    <groupId>org.nixxed</groupId>
+    <artifactId>clusterfilepoller</artifactId>
+    <version>0.0.2</version>
 
     <dependencies>
+        <!--Logging framework-->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
             <version>1.7.5</version>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>${logback.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-core</artifactId>
-            <version>${logback.version}</version>
-        </dependency>
-
-        <!--Used for scheduling jobs-->
-        <dependency>
-            <groupId>org.quartz-scheduler</groupId>
-            <artifactId>quartz</artifactId>
-            <version>2.2.0</version>
         </dependency>
 
         <!--Used for LeaderElection/ZooKeeper-->
