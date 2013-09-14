@@ -12,13 +12,27 @@ Dependencies
 
 Usage
 =====
+Maven:
 
     <dependency>
       <groupId>org.nixxed</groupId>
-      <artifactId>mfp</artifactId>
-      <version>TODO</version>
+      <artifactId>clusterfilepoller</artifactId>
+      <version>0.0.2</version>
     </dependency>
     
-Probably should include some sort of code snippet...
-
+Code:
     
+    //look for xml and zip files
+    ClusterFilePollJob job = new ClusterFilePollJob("/some/path", "(?i)^.*(xml|zip)$", 5);
+    ClusterFilePoller poller = ClusterFilePollerFactory.createClusterFilePoller("localhost:2181", 
+        new FilePollListener() {
+			public void fileFound(File file) {
+				System.out.println("Found: " + file.getPath());
+			}
+		}, job);
+	
+	poller.start();
+	
+	//do other work on this thread, etc
+	
+	poller.stop();
