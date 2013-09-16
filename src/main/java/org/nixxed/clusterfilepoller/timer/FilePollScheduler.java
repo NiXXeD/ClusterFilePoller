@@ -1,24 +1,28 @@
 package org.nixxed.clusterfilepoller.timer;
 
 import org.nixxed.clusterfilepoller.ClusterFilePollJob;
-import org.nixxed.clusterfilepoller.FilePollListener;
+import org.springframework.stereotype.Component;
 
-import java.util.*;
+import javax.annotation.Resource;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * 
  */
+@Component
 public class FilePollScheduler {
-	private final FilePollListener listener;	
-	private final ClusterFilePollJob[] jobs;
 	private final Set<Timer> timers = new HashSet<Timer>();
-	
+
+    private Set<ClusterFilePollJob> jobs;
 	private boolean started = false;
 
-	public FilePollScheduler(FilePollListener listener, ClusterFilePollJob[] jobs) {
-		this.listener = listener;
-		this.jobs = jobs;
-	}
+    @Resource
+    public void setJobs(Set<ClusterFilePollJob> jobs) {
+        this.jobs = jobs;
+    }
 	
 	public boolean isStarted() {
 		return started;
@@ -27,7 +31,7 @@ public class FilePollScheduler {
 	public void start() {
 		if (!started) {
 			for(ClusterFilePollJob job : jobs) {
-				CustomFileFilter filter = new CustomFileFilter(listener, job.getRegex());
+				CustomFileFilter filter = new CustomFileFilter(job.getListener(), job.getRegex());
 				TimerTask task = new FilePollTimerTask(job.getPath(), filter);
 	
 				Timer timer = new Timer();
