@@ -23,19 +23,33 @@ Maven:
       <version>0.0.2</version>
     </dependency>
     
-Code:
+Spring version:
+
+    <bean id="sampleListener" class="org.nixxed.clusterfilepoller.sample.SampleListener"/>
     
-    //look for xml and zip files
-    ClusterFilePollJob job = new ClusterFilePollJob("/some/path", "(?i)^.*(xml|zip)$", 5);
-    ClusterFilePoller poller = ClusterFilePollerFactory.createClusterFilePoller("localhost:2181", 
-        new FilePollListener() {
-			public void fileFound(File file) {
-				System.out.println("Found: " + file.getPath());
-			}
-		}, job);
-	
-	poller.start();
+    <bean class="org.nixxed.clusterfilepoller.ClusterFilePollJob">
+        <constructor-arg name="path" value="/some/path"/>
+        <constructor-arg name="regex" value="(?i)^.*(xml|zip)$"/>
+        <constructor-arg name="intervalSeconds" value="5"/>
+        <constructor-arg name="listener" ref="sampleListener"/>
+    </bean>
+    
+Code version:
+    
+    //look for xml and zip files every 5 seconds in /some/path
+    ClusterFilePollJob job = new ClusterFilePollJob("/some/path", "(?i)^.*(xml|zip)$", 5, 
+            new FilePollListener() {
+                public void fileFound(File file) {
+                    System.out.println("Found: " + file.getPath());
+                }
+            }
+    );
+    
+    //true for autostart
+    ClusterFilePoller poller = ClusterFilePollerFactory.createClusterFilePoller(true, job);
 	
 	//do other work on this thread, etc
+	//...
 	
+	//stop when we're done
 	poller.stop();
