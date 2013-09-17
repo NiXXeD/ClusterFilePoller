@@ -20,7 +20,7 @@ Maven:
     <dependency>
       <groupId>org.nixxed</groupId>
       <artifactId>clusterfilepoller</artifactId>
-      <version>0.0.2</version>
+      <version>0.0.4</version>
     </dependency>
     <dependency>
       <groupId>org.apache.curator</groupId>
