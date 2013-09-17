@@ -22,12 +22,17 @@ Maven:
       <artifactId>clusterfilepoller</artifactId>
       <version>0.0.2</version>
     </dependency>
+    <dependency>
+      <groupId>org.apache.curator</groupId>
+      <artifactId>curator-recipes</artifactId>
+      <version>2.2.0-incubating</version>
+    </dependency>
     
 Spring version:
 
-    <!--Create one of more of these (tied to a job). These will receive the file events.-->
+    <!--Create one or more of these (tied to a job). These will receive the file events.-->
     <bean id="sampleListener" class="org.nixxed.clusterfilepoller.sample.SampleListener"/>
-    
+
     <!--Create one or more of these. Each one will receive its own processing thread.-->
     <bean class="org.nixxed.clusterfilepoller.ClusterFilePollJob">
         <constructor-arg name="path" value="/some/path"/>
@@ -58,3 +63,4 @@ Code version:
 	
 	//stop when we're done
 	poller.stop();
+	
