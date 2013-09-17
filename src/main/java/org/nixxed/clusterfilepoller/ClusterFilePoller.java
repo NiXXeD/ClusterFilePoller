@@ -1,6 +1,5 @@
 package org.nixxed.clusterfilepoller;
 
-import org.nixxed.clusterfilepoller.timer.FilePollScheduler;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.recipes.cache.ChildData;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache;
@@ -10,6 +9,7 @@ import org.apache.curator.framework.recipes.leader.LeaderLatch;
 import org.apache.curator.framework.recipes.leader.LeaderLatchListener;
 import org.apache.curator.utils.ZKPaths;
 import org.apache.zookeeper.KeeperException;
+import org.nixxed.clusterfilepoller.timer.FilePollScheduler;
 import org.nixxed.clusterfilepoller.zk.CuratorFrameworkBean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,34 +20,41 @@ import javax.annotation.PreDestroy;
 import java.io.IOException;
 
 /**
- * Utilize ZooKeeper LeaderElection to start/stop a Quartz Scheduler based on leader status.
+ * Utilize ZooKeeper LeaderElection to start/stop a scheduler based on leader status.
  * Additionally support pause/resume functionality across the cluster.
  */
 public class ClusterFilePoller implements LeaderLatchListener, PathChildrenCacheListener {
     private static final Logger logger = LoggerFactory.getLogger(ClusterFilePoller.class);
-
-    private final CuratorFrameworkBean curatorFramework;
-    private final FilePollScheduler scheduler;
     private static final String electionPath = "/cfp";
 
+    private CuratorFrameworkBean curatorFramework;
+    private FilePollScheduler scheduler;
     private PathChildrenCache pathChildrenCache;
     private LeaderLatch leaderLatch;
     private String pausePath;
     private boolean paused;
 
     @Autowired
-    public ClusterFilePoller(CuratorFrameworkBean curatorFramework, FilePollScheduler scheduler) {
+    public void setCuratorFramework(CuratorFrameworkBean curatorFramework) {
         this.curatorFramework = curatorFramework;
+    }
+
+    @Autowired
+    public void setScheduler(FilePollScheduler scheduler) {
         this.scheduler = scheduler;
     }
 
     /**
      * Start this ClusterScheduler instance. This will connect to ZooKeeper and if this
      * instance is identified as master, the scheduler will start.
+     *
      * @throws Exception
      */
     @PostConstruct
     public void start() throws Exception {
+        logger.trace("ClusterFilePoller starting...");
+        curatorFramework.start();
+
         pausePath = ZKPaths.makePath(electionPath, "paused");
         pathChildrenCache = curatorFramework.createPathChildrenCache(electionPath);
         pathChildrenCache.getListenable().addListener(this);
@@ -56,6 +63,7 @@ public class ClusterFilePoller implements LeaderLatchListener, PathChildrenCache
         leaderLatch = curatorFramework.createLeaderLatch(electionPath);
         leaderLatch.addListener(this);
         leaderLatch.start();
+        logger.trace("ClusterFilePoller started.");
     }
 
     /**
@@ -63,6 +71,7 @@ public class ClusterFilePoller implements LeaderLatchListener, PathChildrenCache
      */
     @PreDestroy
     public void stop() {
+        logger.trace("ClusterFilePoller stopping...");
         try {
             if (leaderLatch != null) {
                 leaderLatch.close();
@@ -70,7 +79,7 @@ public class ClusterFilePoller implements LeaderLatchListener, PathChildrenCache
         } catch (IOException e) {
             logger.info("Unable to shut down leader latch for electionPath={}", electionPath);
         }
-        
+
         try {
             if (pathChildrenCache != null) {
                 pathChildrenCache.close();
@@ -82,6 +91,7 @@ public class ClusterFilePoller implements LeaderLatchListener, PathChildrenCache
         if (scheduler != null) {
             scheduler.stop();
         }
+        logger.trace("ClusterFilePoller stopped.");
     }
 
     @Override
@@ -110,6 +120,7 @@ public class ClusterFilePoller implements LeaderLatchListener, PathChildrenCache
 
     /**
      * Pause this scheduler globally for this election path.
+     *
      * @throws Exception
      */
     public void pause() throws Exception {
@@ -119,6 +130,7 @@ public class ClusterFilePoller implements LeaderLatchListener, PathChildrenCache
     /**
      * Resume a paused scheduler globally for this election path.
      * NOTE; This scheduler instance will not start unless it is master.
+     *
      * @throws Exception
      */
     public void resume() throws Exception {
@@ -127,6 +139,7 @@ public class ClusterFilePoller implements LeaderLatchListener, PathChildrenCache
 
     /**
      * Update the value of this ZK node.
+     *
      * @param value The new value.
      * @throws Exception
      */
