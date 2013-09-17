@@ -25,14 +25,19 @@ Maven:
     
 Spring version:
 
+    <!--Create one of more of these (tied to a job). These will receive the file events.-->
     <bean id="sampleListener" class="org.nixxed.clusterfilepoller.sample.SampleListener"/>
     
+    <!--Create one or more of these. Each one will receive its own processing thread.-->
     <bean class="org.nixxed.clusterfilepoller.ClusterFilePollJob">
         <constructor-arg name="path" value="/some/path"/>
         <constructor-arg name="regex" value="(?i)^.*(xml|zip)$"/>
         <constructor-arg name="intervalSeconds" value="5"/>
         <constructor-arg name="listener" ref="sampleListener"/>
     </bean>
+    
+    <!--Create one of these... Spring configuration class wiring beans together for us.-->
+    <bean class="org.nixxed.clusterfilepoller.ClusterFilePollerFactory" />
     
 Code version:
     

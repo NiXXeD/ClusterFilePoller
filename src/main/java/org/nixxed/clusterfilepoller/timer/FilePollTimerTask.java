@@ -4,45 +4,44 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.TimerTask;
 
 /**
- * A timer job to poll files.
+ * A single polling task job to poll files.
  */
-public class FilePollTimerTask extends TimerTask {
-	private static final Logger logger = LoggerFactory.getLogger(FilePollTimerTask.class);
-	
-	private String path;
-	private CustomFileFilter filter;
+public class FilePollTimerTask implements Runnable {
+    private static final Logger logger = LoggerFactory.getLogger(FilePollTimerTask.class);
 
-	public FilePollTimerTask(String path, CustomFileFilter filter) {
-		this.path = path;
-		this.filter = filter;
-	}
+    private String path;
+    private CustomFileFilter filter;
 
-	@Override
-	public void run() {
-		logger.trace("Starting polling path: {}", path);
+    public FilePollTimerTask(String path, CustomFileFilter filter) {
+        this.path = path;
+        this.filter = filter;
+    }
 
-		File dir = new File(path);
-		if (dir.exists() && dir.isDirectory()) {
-			listFiles(dir, filter);
-		} else {
-			logger.info("Directory does not exist or is not a directory: {}", path);
-		}
+    @Override
+    public void run() {
+        logger.trace("Starting polling path: {}", path);
 
-		logger.trace("Finished polling path: {}", path);
-	}
-	
-	private void listFiles(File dir, CustomFileFilter filter) {
-		File[] subDirs = dir.listFiles(filter);
-		
-		if (subDirs != null) {
-			for (File subDir : subDirs) {
-				listFiles(subDir, filter);
-			}
-		}
-	}
+        File dir = new File(path);
+        if (dir.exists() && dir.isDirectory()) {
+            listFiles(dir, filter);
+        } else {
+            logger.info("Directory does not exist or is not a directory: {}", path);
+        }
 
-	
+        logger.trace("Finished polling path: {}", path);
+    }
+
+    private void listFiles(File dir, CustomFileFilter filter) {
+        File[] subDirs = dir.listFiles(filter);
+
+        if (subDirs != null) {
+            for (File subDir : subDirs) {
+                listFiles(subDir, filter);
+            }
+        }
+    }
+
+
 }
