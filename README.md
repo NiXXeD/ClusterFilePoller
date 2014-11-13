@@ -10,7 +10,7 @@ A simple java file poller utility that works in a clustered environment with aut
 Dependencies
 ============
 * Apache [ZooKeeper](http://zookeeper.apache.org) (Cluster configuration)
-* Apache [Curator](http://curator.incubator.apache.org) (ZooKeeper client)
+* Apache [Curator](http://curator.apache.org/) (ZooKeeper client)
 * [SLF4J](http://www.slf4j.org) (Logging)
 
 
