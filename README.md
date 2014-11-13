@@ -38,3 +38,23 @@ Usage
     String description = "TestPoller";
     MasterHelper masterHelper = new MasterHelper(scheduler, connectionString, electionPath, description);
     masterHelper.start();
+
+Advanced Usage
+==============
+
+    //make a class that implements MasterTask
+    //this task is called start/stop as necessary as master is passed around
+    MasterTask task = new MasterTask() {
+        @Override
+        public void start() {
+            logger.debug("CustomTask started...");
+        }
+
+        @Override
+        public void stop() {
+            logger.debug("CustomTask stopped...");
+        }
+    };
+
+    MasterHelper masterHelper = new MasterHelper(task, connectionString, electionPath, description);
+    masterHelper.start();
