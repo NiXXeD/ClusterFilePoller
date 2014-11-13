@@ -21,16 +21,16 @@ public class FilePollTimerTask implements Runnable {
 
     @Override
     public void run() {
-        logger.trace("Starting polling path: {}", path);
+        logger.trace("Starting Polling path={}", path);
 
         File dir = new File(path);
         if (dir.exists() && dir.isDirectory()) {
             listFiles(dir, filter);
         } else {
-            logger.info("Directory does not exist or is not a directory: {}", path);
+            logger.warn("Directory does not exist or is not a directory: {}", path);
         }
 
-        logger.trace("Finished polling path: {}", path);
+        logger.trace("Finished Polling path={}", path);
     }
 
     private void listFiles(File dir, CustomFileFilter filter) {

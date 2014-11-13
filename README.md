@@ -13,54 +13,28 @@ Dependencies
 * Apache [Curator](http://curator.incubator.apache.org) (ZooKeeper client)
 * [SLF4J](http://www.slf4j.org) (Logging)
 
+
 Usage
 =====
-Maven:
 
-    <dependency>
-      <groupId>org.nixxed</groupId>
-      <artifactId>clusterfilepoller</artifactId>
-      <version>0.0.4</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.curator</groupId>
-      <artifactId>curator-recipes</artifactId>
-      <version>2.2.0-incubating</version>
-    </dependency>
-    
-Spring version:
+    //create a listener for our poller
+    //consider using a thread pool for doing any work in this listener
+    FilePollListener listener = new FilePollListener() {
+        @Override
+        public void fileFound(File file) {
+            file.renameTo(new File(file.getPath() + "_running"));
+        }
+    };
 
-    <!--Create one or more of these (tied to a job). These will receive the file events.-->
-    <bean id="sampleListener" class="org.nixxed.clusterfilepoller.sample.SampleListener"/>
+    //create a job describing the path/regex to poll
+    FilePollJob job = new FilePollJob("/test/path", "(?i)^.*\\.(txt|zip)$", 5, listener);
 
-    <!--Create one or more of these. Each one will receive its own processing thread.-->
-    <bean class="org.nixxed.clusterfilepoller.ClusterFilePollJob">
-        <constructor-arg name="path" value="/some/path"/>
-        <constructor-arg name="regex" value="(?i)^.*(xml|zip)$"/>
-        <constructor-arg name="intervalSeconds" value="5"/>
-        <constructor-arg name="listener" ref="sampleListener"/>
-    </bean>
-    
-    <!--Create one of these... Spring configuration class wiring beans together for us.-->
-    <bean class="org.nixxed.clusterfilepoller.ClusterFilePollerFactory" />
-    
-Code version:
-    
-    //look for xml and zip files every 5 seconds in /some/path
-    ClusterFilePollJob job = new ClusterFilePollJob("/some/path", "(?i)^.*(xml|zip)$", 5, 
-            new FilePollListener() {
-                public void fileFound(File file) {
-                    System.out.println("Found: " + file.getPath());
-                }
-            }
-    );
-    
-    //true for autostart
-    ClusterFilePoller poller = ClusterFilePollerFactory.createClusterFilePoller(true, job);
-	
-	//do other work on this thread, etc
-	//...
-	
-	//stop when we're done
-	poller.stop();
-	
+    //scheduler to manage our job(s), you can submit multiple here
+    FilePollScheduler scheduler = new FilePollScheduler(job);
+
+    //start a master helper, which orchestrates the whole process
+    String connectionString = "localhost:2181";
+    String electionPath = "/clusterFilePollerTest";
+    String description = "TestPoller";
+    MasterHelper masterHelper = new MasterHelper(scheduler, connectionString, electionPath, description);
+    masterHelper.start();

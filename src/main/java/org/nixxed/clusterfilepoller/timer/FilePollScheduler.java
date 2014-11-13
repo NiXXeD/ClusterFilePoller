@@ -1,9 +1,9 @@
 package org.nixxed.clusterfilepoller.timer;
 
-import org.nixxed.clusterfilepoller.ClusterFilePollJob;
-import org.springframework.stereotype.Component;
+import org.nixxed.clusterfilepoller.FilePollJob;
+import org.nixxed.clusterfilepoller.zk.MasterTask;
 
-import javax.annotation.Resource;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -12,41 +12,37 @@ import java.util.concurrent.TimeUnit;
 /**
  * Controls the scheduling of threads to handle executing the task of polling.
  */
-@Component
-public class FilePollScheduler {
-    private ScheduledExecutorService service;
-    private Set<ClusterFilePollJob> jobs;
-    private boolean started = false;
+public class FilePollScheduler implements MasterTask {
+    private ScheduledExecutorService scheduler;
+    private Set<FilePollJob> jobs;
 
-    @Resource
-    public void setJobs(Set<ClusterFilePollJob> jobs) {
+    public FilePollScheduler(FilePollJob job) {
+        jobs = new HashSet<FilePollJob>();
+        jobs.add(job);
+    }
+
+    public FilePollScheduler(Set<FilePollJob> jobs) {
         this.jobs = jobs;
     }
 
-    public boolean isStarted() {
-        return started;
-    }
-
+    @Override
     public void start() {
-        if (!started) {
-            service = new ScheduledThreadPoolExecutor(jobs.size());
-            started = true;
+        scheduler = new ScheduledThreadPoolExecutor(jobs.size());
 
-            for (ClusterFilePollJob job : jobs) {
-                CustomFileFilter filter = new CustomFileFilter(job.getListener(), job.getRegex());
-                Runnable task = new FilePollTimerTask(job.getPath(), filter);
+        for (FilePollJob job : jobs) {
+            CustomFileFilter filter = new CustomFileFilter(job.getListener(), job.getRegex());
+            Runnable task = new FilePollTimerTask(job.getPath(), filter);
 
-                service.scheduleAtFixedRate(task, 0, job.getIntervalSeconds(), TimeUnit.SECONDS);
-            }
+            scheduler.scheduleAtFixedRate(task, 0, job.getIntervalSeconds(), TimeUnit.SECONDS);
         }
     }
 
+    @Override
     public void stop() {
-        if (started) {
-            service.shutdownNow();
+        if (scheduler != null) {
+            scheduler.shutdownNow();
 
-            service = null;
-            started = false;
+            scheduler = null;
         }
     }
 }
