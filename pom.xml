@@ -9,6 +9,10 @@
     <version>0.1.0</version>
     <packaging>jar</packaging>
 
+    <name>Cluster File Poller</name>
+    <description>A simple util for clustered file polling with failover.</description>
+    <url>https://github.com/NiXXeD/ClusterFilePoller</url>
+
     <dependencies>
 
         <!--Logging framework-->
